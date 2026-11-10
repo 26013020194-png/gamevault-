@@ -1,0 +1,405 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Vault | Mini Arcade</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0c0c16;
+    color: white;
+}
+
+header {
+    padding: 22px 8%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #151525;
+    border-bottom: 1px solid #292943;
+}
+
+.logo {
+    color: #a78bfa;
+    font-size: 25px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.status {
+    color: #4ade80;
+    font-size: 13px;
+}
+
+.hero {
+    text-align: center;
+    padding: 55px 15px 30px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.hero h1 span {
+    color: #a78bfa;
+}
+
+.hero p {
+    color: #aaa;
+}
+
+.games {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 22px;
+    max-width: 1050px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.card {
+    background: #19192b;
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid #30304a;
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-7px);
+    border-color: #a78bfa;
+    box-shadow: 0 0 20px #8b5cf633;
+}
+
+.emoji {
+    font-size: 45px;
+}
+
+.card h2 {
+    margin-bottom: 8px;
+}
+
+.card p {
+    color: #aaa;
+    min-height: 38px;
+}
+
+button {
+    background: #8b5cf6;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #6d3fe0;
+}
+
+.game-area {
+    display: none;
+    max-width: 550px;
+    margin: 25px auto;
+    padding: 25px;
+    background: #19192b;
+    border: 1px solid #8b5cf6;
+    border-radius: 15px;
+    text-align: center;
+}
+
+.game-area input {
+    padding: 12px;
+    width: 100px;
+    border-radius: 7px;
+    border: none;
+    margin: 10px;
+    font-size: 16px;
+}
+
+.game-area p {
+    color: #c4b5fd;
+}
+
+#reactionBox {
+    background: #292943;
+    padding: 35px 15px;
+    border-radius: 12px;
+    margin: 15px 0;
+    cursor: pointer;
+    font-size: 20px;
+}
+
+#reactionBox.ready {
+    background: #16a34a;
+}
+
+#reactionBox.waiting {
+    background: #b45309;
+}
+
+footer {
+    text-align: center;
+    color: #777;
+    padding: 35px;
+    margin-top: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">🎮 GAME VAULT</div>
+    <div class="status">● ONLINE</div>
+</header>
+
+<section class="hero">
+    <h1>WELCOME TO <span>GAME VAULT</span></h1>
+    <p>Your mini arcade. Choose a game and have fun!</p>
+</section>
+
+<section class="games">
+
+    <div class="card">
+        <div class="emoji">🔢</div>
+        <h2>Number Hunt</h2>
+        <p>Can you guess the secret number between 1 and 20?</p>
+        <button onclick="openGame('guess')">PLAY NOW →</button>
+    </div>
+
+    <div class="card">
+        <div class="emoji">✊</div>
+        <h2>RPS Battle</h2>
+        <p>Challenge the computer in Rock Paper Scissors!</p>
+        <button onclick="openGame('rps')">PLAY NOW →</button>
+    </div>
+
+    <div class="card">
+        <div class="emoji">⚡</div>
+        <h2>Reflex Rush</h2>
+        <p>Test your speed. How fast can you react?</p>
+        <button onclick="openGame('reflex')">PLAY NOW →</button>
+    </div>
+
+</section>
+
+<div class="game-area" id="gameArea">
+    <h2 id="gameTitle"></h2>
+    <div id="gameContent"></div>
+    <br>
+    <button onclick="closeGame()">← BACK TO VAULT</button>
+</div>
+
+<footer>
+    GAME VAULT © 2026 | MADE WITH HTML, CSS & JAVASCRIPT
+</footer>
+
+<script>
+
+let secretNumber;
+let attempts;
+let reactionStart;
+let reactionTimer;
+let waiting = false;
+let ready = false;
+
+function openGame(game) {
+
+    let area = document.getElementById("gameArea");
+    let title = document.getElementById("gameTitle");
+    let content = document.getElementById("gameContent");
+
+    area.style.display = "block";
+    area.scrollIntoView({behavior: "smooth"});
+
+    if (game === "guess") {
+
+        secretNumber = Math.floor(Math.random() * 20) + 1;
+        attempts = 0;
+
+        title.innerText = "🔢 NUMBER HUNT";
+
+        content.innerHTML = `
+            <p>Guess a number between 1 and 20.</p>
+            <input type="number" id="guessInput"
+            min="1" max="20" placeholder="Number">
+            <button onclick="checkGuess()">GUESS</button>
+            <p id="guessResult">Good luck!</p>
+            <p id="attemptCount">Attempts: 0</p>
+            <button onclick="openGame('guess')">RESTART</button>
+        `;
+    }
+
+    else if (game === "rps") {
+
+        title.innerText = "✊ RPS BATTLE";
+
+        content.innerHTML = `
+            <p>Choose your weapon!</p>
+            <button onclick="playRPS('Rock')">✊ Rock</button>
+            <button onclick="playRPS('Paper')">✋ Paper</button>
+            <button onclick="playRPS('Scissors')">✌️ Scissors</button>
+            <h3 id="rpsResult">Ready to battle?</h3>
+        `;
+    }
+
+    else if (game === "reflex") {
+
+        title.innerText = "⚡ REFLEX RUSH";
+
+        content.innerHTML = `
+            <p>Wait for green, then click as fast as possible!</p>
+            <div id="reactionBox"
+            onclick="reactionClick()">PRESS START</div>
+            <button onclick="startReaction()">START TEST</button>
+            <p id="reactionResult"></p>
+        `;
+    }
+}
+
+function closeGame() {
+
+    document.getElementById("gameArea").style.display = "none";
+    clearTimeout(reactionTimer);
+    waiting = false;
+    ready = false;
+}
+
+function checkGuess() {
+
+    let input = document.getElementById("guessInput");
+    let guess = Number(input.value);
+    let result = document.getElementById("guessResult");
+
+    if (!input.value || guess < 1 || guess > 20) {
+        result.innerText = "Enter a number from 1 to 20!";
+        return;
+    }
+
+    attempts++;
+
+    if (guess === secretNumber) {
+        result.innerText = "🎉 CORRECT! You found the number!";
+        document.getElementById("guessInput").disabled = true;
+    }
+
+    else if (guess < secretNumber) {
+        result.innerText = "📈 Too low! Try a higher number.";
+    }
+
+    else {
+        result.innerText = "📉 Too high! Try a lower number.";
+    }
+
+    document.getElementById("attemptCount").innerText =
+        "Attempts: " + attempts;
+}
+
+function playRPS(player) {
+
+    let choices = ["Rock", "Paper", "Scissors"];
+
+    let computer = choices[
+        Math.floor(Math.random() * 3)
+    ];
+
+    let result;
+
+    if (player === computer) {
+        result = "It's a draw! 🤝";
+    }
+
+    else if (
+        (player === "Rock" && computer === "Scissors") ||
+        (player === "Paper" && computer === "Rock") ||
+        (player === "Scissors" && computer === "Paper")
+    ) {
+        result = "You WIN! 🏆";
+    }
+
+    else {
+        result = "Computer WINS! 🤖";
+    }
+
+    document.getElementById("rpsResult").innerText =
+        "You: " + player +
+        " | Computer: " + computer +
+        " | " + result;
+}
+
+function startReaction() {
+
+    clearTimeout(reactionTimer);
+
+    let box = document.getElementById("reactionBox");
+    let result = document.getElementById("reactionResult");
+
+    waiting = true;
+    ready = false;
+
+    box.className = "waiting";
+    box.innerText = "WAIT FOR GREEN...";
+    result.innerText = "";
+
+    let delay = Math.random() * 3000 + 2000;
+
+    reactionTimer = setTimeout(() => {
+
+        ready = true;
+        waiting = false;
+
+        reactionStart = Date.now();
+
+        box.className = "ready";
+        box.innerText = "CLICK NOW!";
+
+    }, delay);
+}
+
+function reactionClick() {
+
+    let box = document.getElementById("reactionBox");
+    let result = document.getElementById("reactionResult");
+
+    if (waiting) {
+
+        clearTimeout(reactionTimer);
+
+        waiting = false;
+
+        box.className = "";
+        box.innerText = "TOO EARLY!";
+
+        result.innerText = "Wait for green next time!";
+    }
+
+    else if (ready) {
+
+        let time = Date.now() - reactionStart;
+
+        ready = false;
+
+        box.className = "";
+        box.innerText = "TEST COMPLETE";
+
+        result.innerText =
+            "⚡ Your reaction time: " + time + " ms";
+    }
+}
+
+</script>
+
+</body>
+</html>
